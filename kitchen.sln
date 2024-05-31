@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.810.10
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "kitchen", "kitchen.csproj", "{13771F6F-4DE8-4302-899C-C0876B51B674}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		DebugCompileShaders|Any CPU = DebugCompileShaders|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{13771F6F-4DE8-4302-899C-C0876B51B674}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13771F6F-4DE8-4302-899C-C0876B51B674}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13771F6F-4DE8-4302-899C-C0876B51B674}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13771F6F-4DE8-4302-899C-C0876B51B674}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {371D6E97-3ECD-4877-B819-C05799556569}
+	EndGlobalSection
+EndGlobal
