@@ -6,14 +6,12 @@ namespace kitchen {
 
 	public struct CycleRegion {
 		public readonly int cycleStart;
-		public readonly int cycleLength;
+		public readonly int cycleEnd;
 		public readonly float rateMultiplier;
-		public float time;
-		public CycleRegion(int _cycleStart, int _cycleLength, float _rateMultiplier = 1) {
+		public CycleRegion(int _cycleStart, int _cycleEnd, float _rateMultiplier = 1) {
 			cycleStart = _cycleStart;
-			cycleLength = _cycleLength;
+			cycleEnd = _cycleEnd;
 			rateMultiplier = _rateMultiplier;
-			time = 0;
 		}
 	}
 
@@ -26,23 +24,25 @@ namespace kitchen {
 		Color[] paletteBuffer;
 		Color terminateColor = new Color(0, 255, 0);
 
-		int[] textureColorIndicies;
+		int[] texturePaletteIndicies;
 
 		int texturesize;
 		int palettesize;
 
 		CycleRegion[] cycleRegions;
+		float[] timers; //seperate array to keep cycleRegions immutable
+
+		public Rectangle TextureBounds { get; }
 
 
-
-
-		public PaletteCycler(Texture2D _texture, CycleRegion[] _cycleRegions, float cycleRate) {
+		public PaletteCycler(Texture2D _texture, CycleRegion[] _cycleRegions, float cycleRate, Rectangle? _textureBounds = null) {
 			texture = _texture;
+			TextureBounds = _textureBounds ?? new Rectangle(0, 1, texture.Width, texture.Height - 1);
 
 			texturesize = texture.Width * texture.Height;
 
 			textureData = new Color[texturesize];
-			textureColorIndicies = new int[texturesize];
+			texturePaletteIndicies = new int[texturesize];
 
 			texture.GetData(textureData);
 
@@ -55,15 +55,14 @@ namespace kitchen {
 
 			palette = new Color[palettesize];
 			paletteBuffer = new Color[palettesize];
-			for (int i = 0; i < palettesize; i++) {
-				palette[i] = textureData[i];
-			}
+
+			palette = textureData[0..palettesize];
 
 
 			for (int i = 0; i < texturesize; i++) {
 				for(int j = 0; j < palettesize; j++) {
 					if(textureData[i] == palette[j]) {
-						textureColorIndicies[i] = j;
+						texturePaletteIndicies[i] = j;
 						break;
 					}
 				}
@@ -71,23 +70,26 @@ namespace kitchen {
 
 			rate = cycleRate;
 			cycleRegions = _cycleRegions;
+			timers = new float[cycleRegions.Length];
 		}
 
 
-		float time = 0;
+		//float time = 0;
 		float rate;
 
 
 		public void Update(GameTime gameTime) {
 			float elapsed = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
-			for (int r = 0; r < cycleRegions.Length; r++) {
+			for (int r = 0; r < timers.Length; r++) {
 				CycleRegion region = cycleRegions[r];
-				cycleRegions[r].time += elapsed;
-				if (cycleRegions[r].time > rate / region.rateMultiplier) {
+				timers[r] += elapsed;
+				if (timers[r] > rate / region.rateMultiplier) {
+					timers[r] = 0;
+
 					int cycleStart = region.cycleStart;
-					int cycleLength = region.cycleLength - cycleStart;
-					cycleRegions[r].time = 0;
+					int cycleLength = region.cycleEnd - cycleStart;
+					
 					palette.CopyTo(paletteBuffer, 0);
 
 					for (int i = cycleStart; i < cycleStart + cycleLength; i++) {
@@ -96,35 +98,12 @@ namespace kitchen {
 					}
 
 					for (int i = 0; i < texturesize; i++) {
-						textureData[i] = palette[textureColorIndicies[i]];
+						textureData[i] = palette[texturePaletteIndicies[i]];
 					}
 					texture.SetData(textureData);
 				}
 			}
 
-		}
-
-		public void UpdateSingle(GameTime gameTime) {
-			time += (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-			while (time > rate) {
-				time -= rate;
-
-				palette.CopyTo(paletteBuffer, 0);
-
-				for (int r = 0; r < cycleRegions.Length; r += 1) {
-					int cycleStart = cycleRegions[r].cycleStart;
-					int cycleLength = cycleRegions[r].cycleLength;
-					for (int i = cycleStart; i < cycleStart + cycleLength; i++) {
-						palette[i] = paletteBuffer[((i - cycleStart + 1) % cycleLength) + cycleStart];
-					}
-				}
-
-				for (int i = 0; i < texturesize; i++) {
-					textureData[i] = palette[textureColorIndicies[i]];
-				}
-				texture.SetData(textureData);
-			}
 		}
 
 

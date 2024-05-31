@@ -76,8 +76,8 @@ namespace kitchen {
 		protected override void LoadContent() {
 			spriteBatch = new SpriteBatch(GraphicsDevice);
 
-			byte[] bytecode = File.ReadAllBytes(Utility.getFullPath("Content/ShaderBin/effect.out"));
-			spriteEffect = new Effect(GraphicsDevice, bytecode);
+			byte[] shaderbytecode = File.ReadAllBytes(Utility.getFullPath("Content/ShaderBin/effect.out"));
+			spriteEffect = new Effect(GraphicsDevice, shaderbytecode);
 
 			Texture2D paletteImport = Content.Load<Texture2D>("palette_pinknoise");
 			testPlasma = new Plasma2(windowWidth, windowHeight, GraphicsDevice, paletteImport);
@@ -97,12 +97,17 @@ namespace kitchen {
 
 
 			};
-			cycler = new PaletteCycler(waterfallTexture, cycleRegions, 0.5f);
+			ferrari_cycler = new PaletteCycler(waterfallTexture, cycleRegions, 0.1f);
+
+			Texture2D waterfall_yoshi_tile = Content.Load<Texture2D>("waterfall_yoshi_tile");
+			yoshi_cycler = new PaletteCycler(waterfall_yoshi_tile, new CycleRegion[] { new(9, 13) }, 0.1f);
+
 		}
 
 		Plasma2 testPlasma;
 
-		PaletteCycler cycler;
+		PaletteCycler ferrari_cycler;
+		PaletteCycler yoshi_cycler;
 
 		protected override void Update(GameTime gameTime) {
 
@@ -111,8 +116,8 @@ namespace kitchen {
 
 
 			//testPlasma.Update(gameTime);
-			cycler.Update(gameTime);
-
+			ferrari_cycler.Update(gameTime);
+			yoshi_cycler.Update(gameTime);
 			base.Update(gameTime);
 		}
 
@@ -130,7 +135,12 @@ namespace kitchen {
 
 
 			//cycler.Draw(spriteBatch, gameTime);
-			spriteBatch.Draw(cycler.texture, new Vector2(0, -1), Color.White);
+			spriteBatch.Draw(ferrari_cycler.texture, new Vector2(0, -1), Color.White);
+			spriteBatch.Draw(yoshi_cycler.texture, new Vector2(64, 32), new Rectangle(0, 1, 32, 32), Color.White);
+			for (int i = 64; i < 512; i += 32) {
+				spriteBatch.Draw(yoshi_cycler.texture, new Vector2(64, i), new Rectangle(0, 33, 32, 32), Color.White);
+			}
+
 
 			spriteBatch.End();
 
