@@ -18,7 +18,13 @@ namespace kitchen {
 
 	public class PaletteCycler {
 
-		public Texture2D texture { get; }
+		Texture2D texture;
+
+		public Texture2D Texture => textureBuffers[bufferIndex];
+
+		Texture2D[] textureBuffers;
+		const int bufferLength = 16;
+
 		public Color[] palette { get; }
 		Color[] textureData;
 		Color[] paletteBuffer;
@@ -35,9 +41,12 @@ namespace kitchen {
 		public Rectangle TextureBounds { get; }
 
 
-		public PaletteCycler(Texture2D _texture, CycleRegion[] _cycleRegions, float cycleRate, Rectangle? _textureBounds = null) {
+
+		public PaletteCycler(GraphicsDevice graphicsDevice, Texture2D _texture, CycleRegion[] _cycleRegions, float cycleRate, Rectangle? _textureBounds = null) {
 			texture = _texture;
 			TextureBounds = _textureBounds ?? new Rectangle(0, 1, texture.Width, texture.Height - 1);
+
+
 
 			texturesize = texture.Width * texture.Height;
 
@@ -45,6 +54,13 @@ namespace kitchen {
 			texturePaletteIndicies = new int[texturesize];
 
 			texture.GetData(textureData);
+
+			textureBuffers = new Texture2D[bufferLength];
+			for (int i = 0; i < bufferLength; i++) {
+				textureBuffers[i] = new Texture2D(graphicsDevice, texture.Width, texture.Height);
+				textureBuffers[i].SetData(textureData);
+			}
+
 
 			palettesize = 0;
 			for (int i = 0; i < texturesize; i++) {
@@ -78,17 +94,18 @@ namespace kitchen {
 		float rate;
 
 
-		public void Update(GameTime gameTime) {
+		int bufferIndex = 0;
+
+		public void Draw(GameTime gameTime) {
 			float elapsed = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
 			for (int r = 0; r < timers.Length; r++) {
-				CycleRegion region = cycleRegions[r];
 				timers[r] += elapsed;
-				if (timers[r] > rate / region.rateMultiplier) {
-					timers[r] = 0;
+				while (timers[r] > rate / cycleRegions[r].rateMultiplier) {
+					timers[r] -= rate / cycleRegions[r].rateMultiplier;
 
-					int cycleStart = region.cycleStart;
-					int cycleLength = region.cycleEnd - cycleStart;
+					int cycleStart = cycleRegions[r].cycleStart;
+					int cycleLength = cycleRegions[r].cycleEnd - cycleStart;
 					
 					palette.CopyTo(paletteBuffer, 0);
 
@@ -100,7 +117,12 @@ namespace kitchen {
 					for (int i = 0; i < texturesize; i++) {
 						textureData[i] = palette[texturePaletteIndicies[i]];
 					}
-					texture.SetData(textureData);
+				
+				textureBuffers[bufferIndex].SetData(textureData);
+
+				bufferIndex = (bufferIndex + 1) % bufferLength;
+
+					//texture.SetData(textureData);
 				}
 			}
 

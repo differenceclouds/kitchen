@@ -52,23 +52,26 @@ namespace kitchen {
 			//texture.SetData(buffer);
 		}
 
-		int prevT;
-		int drawTime;
 		int n = 0;
-		const float framerate = 30.0f;
+
+		float rate = 0.1f;
+		float time = 0;
 		public void Draw(SpriteBatch spriteBatch, GameTime gameTime, Rectangle destination, Rectangle source) {
-			prevT = drawTime;
-			drawTime = (int)(gameTime.TotalGameTime.TotalSeconds * framerate);
-			var bufferSpan = new Span<Color>(buffer);
-			var paletteSpan = new Span<Color>(palette);
-			var plasmaSpan = new Span<int>(plasma);
-			for (int i = 0; i < width * height; i++) {
-				bufferSpan[i] = paletteSpan[(plasmaSpan[i] + n) % palette.Length];
+			time += (float)gameTime.ElapsedGameTime.TotalSeconds;
+			if (time > rate) {
+				time = 0;
+
+				var bufferSpan = new Span<Color>(buffer);
+				var paletteSpan = new Span<Color>(palette);
+				var plasmaSpan = new Span<int>(plasma);
+				for (int i = 0; i < width * height; i++) {
+					bufferSpan[i] = paletteSpan[(plasmaSpan[i] + n) % palette.Length];
+				}
+
+				n++;
+
+				texture.SetData(bufferSpan.ToArray());
 			}
-
-			n++;
-
-			texture.SetData(bufferSpan.ToArray());
 			spriteBatch.Draw(texture, destination, source, Color.White);
 		}
 
